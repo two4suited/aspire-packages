@@ -6,7 +6,7 @@ using Azure.Provisioning.Expressions;
 using Azure.Provisioning.Primitives;
 using Azure.Provisioning.Storage;
 
-namespace Aspire.Hosting.Azure;
+namespace Aspire.Hosting.Azure.StaticWebsite;
 
 public static class AzureStaticWebsiteExtensions
 {
