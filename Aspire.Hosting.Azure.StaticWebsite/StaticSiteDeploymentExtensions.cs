@@ -4,7 +4,7 @@ using Aspire.Hosting.Pipelines;
 
 namespace Aspire.Hosting.Azure;
 
-static class StaticSiteDeploymentExtensions
+internal static class StaticSiteDeploymentExtensions
 {
 #pragma warning disable ASPIREPIPELINES001, ASPIREPIPELINES003
     public static IResourceBuilder<StaticSiteDeploymentResource> AddStaticSiteDeployment(

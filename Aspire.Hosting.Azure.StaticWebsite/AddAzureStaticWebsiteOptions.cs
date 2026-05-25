@@ -1,6 +1,6 @@
 namespace Aspire.Hosting.Azure;
 
-class AddAzureStaticWebsiteOptions
+public class AddAzureStaticWebsiteOptions
 {
     public required string SiteSourcePath          { get; init; }
     public required string AfdProfileName          { get; init; }

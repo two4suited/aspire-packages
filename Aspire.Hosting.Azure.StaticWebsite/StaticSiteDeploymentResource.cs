@@ -2,7 +2,7 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace Aspire.Hosting.Azure;
 
-class StaticSiteDeploymentResource : IResource
+internal class StaticSiteDeploymentResource : IResource
 {
     public string Name { get; }
     public ResourceAnnotationCollection Annotations { get; } = new();

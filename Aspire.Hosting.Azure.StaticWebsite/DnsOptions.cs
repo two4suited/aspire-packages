@@ -1,6 +1,6 @@
 namespace Aspire.Hosting.Azure;
 
-record DnsOptions
+internal record DnsOptions
 {
     public required string CustomDomain           { get; init; } // zone name + FQDN, e.g. "knickssweep.com"
     public required string ResourceGroup          { get; init; } // RG hosting the DNS zone

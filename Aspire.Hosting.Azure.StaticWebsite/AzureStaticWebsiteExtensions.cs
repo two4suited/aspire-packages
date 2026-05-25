@@ -8,9 +8,9 @@ using Azure.Provisioning.Storage;
 
 namespace Aspire.Hosting.Azure;
 
-static class AzureStaticWebsiteExtensions
+public static class AzureStaticWebsiteExtensions
 {
-    public static IResourceBuilder<StaticSiteDeploymentResource> AddAzureStaticWebsite(
+    public static IDistributedApplicationBuilder AddAzureStaticWebsite(
         this IDistributedApplicationBuilder builder,
         string name,
         AddAzureStaticWebsiteOptions options)
@@ -193,7 +193,7 @@ static class AzureStaticWebsiteExtensions
                 });
             });
 
-        return builder.AddStaticSiteDeployment(
+        builder.AddStaticSiteDeployment(
             name,
             siteSourcePath,
             storage,
@@ -207,5 +207,7 @@ static class AzureStaticWebsiteExtensions
                 AfdEndpointName        = afdEndpointName,
                 AfdCustomDomainArmName = afdCustomDomainArmName,
             });
+
+        return builder;
     }
 }
