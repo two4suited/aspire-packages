@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Aspire.Hosting.Azure</RootNamespace>
+    <AssemblyName>Aspire.Hosting.Azure.StaticWebsite</AssemblyName>
+    <RepositoryUrl>https://github.com/Sheridan-Consulting/aspire-packages</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Azure.FrontDoor" Version="13.3.5-preview.1.26270.6" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.3.5" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.3.5" />
+  </ItemGroup>
+
+</Project>

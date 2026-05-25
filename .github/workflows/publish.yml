@@ -1,0 +1,48 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 1.0.0)'
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "value=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          else
+            echo "value=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Restore
+        run: dotnet restore Aspire.Hosting.Azure.StaticWebsite/Aspire.Hosting.Azure.StaticWebsite.csproj
+
+      - name: Build
+        run: dotnet build Aspire.Hosting.Azure.StaticWebsite/Aspire.Hosting.Azure.StaticWebsite.csproj --no-restore -c Release
+
+      - name: Pack
+        run: >
+          dotnet pack Aspire.Hosting.Azure.StaticWebsite/Aspire.Hosting.Azure.StaticWebsite.csproj
+          --no-build -c Release
+          -p:PackageVersion=${{ steps.version.outputs.value }}
+          -o ./nupkg
+
+      - name: Push to GitHub Packages
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Sheridan-Consulting/index.json --skip-duplicate
