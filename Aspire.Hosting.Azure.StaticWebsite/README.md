@@ -2,7 +2,7 @@
 
 An [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview) hosting package that provisions an Azure static website backed by **Azure Blob Storage** and an **existing Azure Front Door** profile, with optional custom domain and DNS configuration.
 
-On `azd up` / publish it will also:
+On `aspire deploy` it will also:
 1. Run `npm run build` in your site's source directory
 2. Enable static website hosting on the storage account
 3. Upload the `dist/` output to the `$web` blob container
