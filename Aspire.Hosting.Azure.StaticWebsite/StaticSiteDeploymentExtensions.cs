@@ -107,7 +107,7 @@ internal static class StaticSiteDeploymentExtensions
                         var validationToken = (await RunAzOutputAsync(
                             $"afd custom-domain show " +
                             $"--resource-group {dns.AzureFrontDoorResourceGroup} --profile-name {dns.AzureFrontDoorProfileName} " +
-                            $"--custom-domain-name {dns.AzureFrontDoorCustomDomainArmName} " +
+                            $"--custom-domain-name {dns.AzureFrontDoorCustomDomainName} " +
                             $"--query \"validationProperties.validationToken\" -o tsv",
                             context.CancellationToken)).Trim();
 

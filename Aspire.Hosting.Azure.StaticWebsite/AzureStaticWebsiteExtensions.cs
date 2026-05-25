@@ -20,7 +20,7 @@ public static class AzureStaticWebsiteExtensions
         var azureFrontDoorEndpointName        = options.AzureFrontDoorEndpointName;
         var azureFrontDoorResourceGroup       = options.AzureFrontDoorResourceGroup;
         var azureFrontDoorCustomDomain        = options.AzureFrontDoorCustomDomain;
-        var azureFrontDoorCustomDomainArmName = options.AzureFrontDoorCustomDomainArmName;
+        var azureFrontDoorCustomDomainName = options.AzureFrontDoorCustomDomainName;
         var dnsResourceGroup       = options.DnsResourceGroup;
 
         var storage = builder.AddAzureStorage("storage")
@@ -140,12 +140,12 @@ public static class AzureStaticWebsiteExtensions
 
                 // ── Custom domain (optional) ──────────────────────────────────
                 FrontDoorCustomDomain? customDomain = null;
-                if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainArmName is not null)
+                if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainName is not null)
                 {
                     customDomain = new FrontDoorCustomDomain("customDomain")
                     {
                         Parent = profile,
-                        Name = azureFrontDoorCustomDomainArmName,
+                        Name = azureFrontDoorCustomDomainName,
                         HostName = azureFrontDoorCustomDomain,
                         TlsSettings = new FrontDoorCustomDomainHttpsContent
                         {
@@ -201,7 +201,7 @@ public static class AzureStaticWebsiteExtensions
             });
 
         DnsOptions? dns = null;
-        if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainArmName is not null && dnsResourceGroup is not null)
+        if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainName is not null && dnsResourceGroup is not null)
         {
             dns = new DnsOptions
             {
@@ -210,7 +210,7 @@ public static class AzureStaticWebsiteExtensions
                 AzureFrontDoorProfileName         = azureFrontDoorProfileName,
                 AzureFrontDoorResourceGroup       = azureFrontDoorResourceGroup,
                 AzureFrontDoorEndpointName        = azureFrontDoorEndpointName,
-                AzureFrontDoorCustomDomainArmName = azureFrontDoorCustomDomainArmName,
+                AzureFrontDoorCustomDomainName = azureFrontDoorCustomDomainName,
             };
         }
 
