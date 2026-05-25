@@ -15,18 +15,10 @@ public static class AzureStaticWebsiteExtensions
         string name,
         AddAzureStaticWebsiteOptions options)
     {
-        var siteSourcePath         = options.SiteSourcePath;
-        var azureFrontDoorProfileName         = options.AzureFrontDoorProfileName;
-        var azureFrontDoorEndpointName        = options.AzureFrontDoorEndpointName;
-        var azureFrontDoorResourceGroup       = options.AzureFrontDoorResourceGroup;
-        var azureFrontDoorCustomDomain        = options.AzureFrontDoorCustomDomain;
-        var azureFrontDoorCustomDomainName = options.AzureFrontDoorCustomDomainName;
-        var dnsResourceGroup       = options.DnsResourceGroup;
-
         var storage = builder.AddAzureStorage("storage")
-            .ConfigureInfrastructure(options =>
+            .ConfigureInfrastructure(storageInfra =>
             {
-                var storageAccount = options.GetProvisionableResources()
+                var storageAccount = storageInfra.GetProvisionableResources()
                     .OfType<StorageAccount>()
                     .Single();
 
@@ -35,11 +27,11 @@ public static class AzureStaticWebsiteExtensions
                 storageAccount.AllowBlobPublicAccess = true;
                 storageAccount.AllowSharedKeyAccess = true;
 
-                options.Add(new ProvisioningOutput("storageAccountName", typeof(string))
+                storageInfra.Add(new ProvisioningOutput("storageAccountName", typeof(string))
                 {
                     Value = storageAccount.Name
                 });
-                options.Add(new ProvisioningOutput("storageWebUrl", typeof(string))
+                storageInfra.Add(new ProvisioningOutput("storageWebUrl", typeof(string))
                 {
                     Value = storageAccount.PrimaryEndpoints.WebUri
                 });
@@ -54,8 +46,8 @@ public static class AzureStaticWebsiteExtensions
 
         var frontDoor = builder.AddAzureFrontDoor("azure-shared")
             .AsExisting(
-                builder.AddParameter("frontdoor-name", azureFrontDoorProfileName),
-                builder.AddParameter("frontdoor-rg",   azureFrontDoorResourceGroup))
+                builder.AddParameter("frontdoor-name", options.AzureFrontDoorProfileName),
+                builder.AddParameter("frontdoor-rg",   options.AzureFrontDoorResourceGroup))
             .ConfigureInfrastructure(infra =>
             {
                 // The auto-generated CdnProfile would CREATE a brand-new Front Door instance.
@@ -68,7 +60,7 @@ public static class AzureStaticWebsiteExtensions
                 infra.Remove(generatedProfile);
 
                 var profile = CdnProfile.FromExisting("azure_shared");
-                profile.Name = azureFrontDoorProfileName;
+                profile.Name = options.AzureFrontDoorProfileName;
                 infra.Add(profile);
 
                 // Bring the storage web URL from the storage Bicep output into this template.
@@ -95,7 +87,7 @@ public static class AzureStaticWebsiteExtensions
                 var endpoint = new FrontDoorEndpoint("staticSiteEp")
                 {
                     Parent = profile,
-                    Name = azureFrontDoorEndpointName,
+                    Name = options.AzureFrontDoorEndpointName,
                     EnabledState = EnabledState.Enabled,
                     Location = new AzureLocation("global"),
                 };
@@ -105,7 +97,7 @@ public static class AzureStaticWebsiteExtensions
                 var originGroup = new FrontDoorOriginGroup("staticSiteOg")
                 {
                     Parent = profile,
-                    Name = $"{azureFrontDoorEndpointName}-og",
+                    Name = $"{options.AzureFrontDoorEndpointName}-og",
                     HealthProbeSettings = new HealthProbeSettings
                     {
                         ProbePath = "/",
@@ -140,13 +132,13 @@ public static class AzureStaticWebsiteExtensions
 
                 // ── Custom domain (optional) ──────────────────────────────────
                 FrontDoorCustomDomain? customDomain = null;
-                if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainName is not null)
+                if (options.AzureFrontDoorCustomDomain is not null && options.AzureFrontDoorCustomDomainName is not null)
                 {
                     customDomain = new FrontDoorCustomDomain("customDomain")
                     {
                         Parent = profile,
-                        Name = azureFrontDoorCustomDomainName,
-                        HostName = azureFrontDoorCustomDomain,
+                        Name = options.AzureFrontDoorCustomDomainName,
+                        HostName = options.AzureFrontDoorCustomDomain,
                         TlsSettings = new FrontDoorCustomDomainHttpsContent
                         {
                             CertificateType = FrontDoorCertificateType.ManagedCertificate,
@@ -201,20 +193,20 @@ public static class AzureStaticWebsiteExtensions
             });
 
         DnsOptions? dns = null;
-        if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainName is not null && dnsResourceGroup is not null)
+        if (options.AzureFrontDoorCustomDomain is not null && options.AzureFrontDoorCustomDomainName is not null && options.DnsResourceGroup is not null)
         {
             dns = new DnsOptions
             {
-                CustomDomain           = azureFrontDoorCustomDomain,
-                ResourceGroup          = dnsResourceGroup,
-                AzureFrontDoorProfileName         = azureFrontDoorProfileName,
-                AzureFrontDoorResourceGroup       = azureFrontDoorResourceGroup,
-                AzureFrontDoorEndpointName        = azureFrontDoorEndpointName,
-                AzureFrontDoorCustomDomainName = azureFrontDoorCustomDomainName,
+                CustomDomain = options.AzureFrontDoorCustomDomain,
+                ResourceGroup = options.DnsResourceGroup,
+                AzureFrontDoorProfileName = options.AzureFrontDoorProfileName,
+                AzureFrontDoorResourceGroup = options.AzureFrontDoorResourceGroup,
+                AzureFrontDoorEndpointName = options.AzureFrontDoorEndpointName,
+                AzureFrontDoorCustomDomainName = options.AzureFrontDoorCustomDomainName,
             };
         }
 
-        builder.AddStaticSiteDeployment(name, siteSourcePath, storage, frontDoor, dns);
+        builder.AddStaticSiteDeployment(name, options.SiteSourcePath, storage, frontDoor, dns);
 
         return builder;
     }
