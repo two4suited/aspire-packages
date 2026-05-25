@@ -2,11 +2,11 @@ namespace Aspire.Hosting.Azure.StaticWebsite;
 
 public class AddAzureStaticWebsiteOptions
 {
-    public required string SiteSourcePath          { get; init; }
-    public required string AfdProfileName          { get; init; }
-    public required string AfdEndpointName         { get; init; }
-    public required string AfdCustomDomain         { get; init; }
-    public required string AfdResourceGroup        { get; init; }
-    public required string AfdCustomDomainArmName  { get; init; }
-    public required string DnsResourceGroup        { get; init; }
+    public required string  SiteSourcePath         { get; init; }
+    public required string  AzureFrontDoorProfileName         { get; init; }
+    public required string  AzureFrontDoorEndpointName        { get; init; }
+    public required string  AzureFrontDoorResourceGroup       { get; init; }
+    public string?          AzureFrontDoorCustomDomain        { get; init; }
+    public string?          AzureFrontDoorCustomDomainArmName { get; init; }
+    public string?          DnsResourceGroup       { get; init; }
 }

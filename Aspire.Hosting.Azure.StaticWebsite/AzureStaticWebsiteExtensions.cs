@@ -15,13 +15,13 @@ public static class AzureStaticWebsiteExtensions
         string name,
         AddAzureStaticWebsiteOptions options)
     {
-        var siteSourcePath        = options.SiteSourcePath;
-        var afdProfileName        = options.AfdProfileName;
-        var afdEndpointName       = options.AfdEndpointName;
-        var afdCustomDomain       = options.AfdCustomDomain;
-        var afdResourceGroup      = options.AfdResourceGroup;
-        var afdCustomDomainArmName = options.AfdCustomDomainArmName;
-        var dnsResourceGroup      = options.DnsResourceGroup;
+        var siteSourcePath         = options.SiteSourcePath;
+        var azureFrontDoorProfileName         = options.AzureFrontDoorProfileName;
+        var azureFrontDoorEndpointName        = options.AzureFrontDoorEndpointName;
+        var azureFrontDoorResourceGroup       = options.AzureFrontDoorResourceGroup;
+        var azureFrontDoorCustomDomain        = options.AzureFrontDoorCustomDomain;
+        var azureFrontDoorCustomDomainArmName = options.AzureFrontDoorCustomDomainArmName;
+        var dnsResourceGroup       = options.DnsResourceGroup;
 
         var storage = builder.AddAzureStorage("storage")
             .ConfigureInfrastructure(options =>
@@ -54,8 +54,8 @@ public static class AzureStaticWebsiteExtensions
 
         var frontDoor = builder.AddAzureFrontDoor("azure-shared")
             .AsExisting(
-                builder.AddParameter("frontdoor-name", afdProfileName),
-                builder.AddParameter("frontdoor-rg",   afdResourceGroup))
+                builder.AddParameter("frontdoor-name", azureFrontDoorProfileName),
+                builder.AddParameter("frontdoor-rg",   azureFrontDoorResourceGroup))
             .ConfigureInfrastructure(infra =>
             {
                 // The auto-generated CdnProfile would CREATE a brand-new Front Door instance.
@@ -68,7 +68,7 @@ public static class AzureStaticWebsiteExtensions
                 infra.Remove(generatedProfile);
 
                 var profile = CdnProfile.FromExisting("azure_shared");
-                profile.Name = afdProfileName;
+                profile.Name = azureFrontDoorProfileName;
                 infra.Add(profile);
 
                 // Bring the storage web URL from the storage Bicep output into this template.
@@ -95,7 +95,7 @@ public static class AzureStaticWebsiteExtensions
                 var endpoint = new FrontDoorEndpoint("staticSiteEp")
                 {
                     Parent = profile,
-                    Name = afdEndpointName,
+                    Name = azureFrontDoorEndpointName,
                     EnabledState = EnabledState.Enabled,
                     Location = new AzureLocation("global"),
                 };
@@ -105,7 +105,7 @@ public static class AzureStaticWebsiteExtensions
                 var originGroup = new FrontDoorOriginGroup("staticSiteOg")
                 {
                     Parent = profile,
-                    Name = $"{afdEndpointName}-og",
+                    Name = $"{azureFrontDoorEndpointName}-og",
                     HealthProbeSettings = new HealthProbeSettings
                     {
                         ProbePath = "/",
@@ -138,21 +138,25 @@ public static class AzureStaticWebsiteExtensions
                 };
                 infra.Add(origin);
 
-                // ── Custom domain ─────────────────────────────────────────────
-                var customDomain = new FrontDoorCustomDomain("knickssweepDomain")
+                // ── Custom domain (optional) ──────────────────────────────────
+                FrontDoorCustomDomain? customDomain = null;
+                if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainArmName is not null)
                 {
-                    Parent = profile,
-                    Name = afdCustomDomainArmName,
-                    HostName = afdCustomDomain,
-                    TlsSettings = new FrontDoorCustomDomainHttpsContent
+                    customDomain = new FrontDoorCustomDomain("customDomain")
                     {
-                        CertificateType = FrontDoorCertificateType.ManagedCertificate,
-                        // Tls1_2 enum serializes as 'TLS 1.2' but ARM expects 'TLS12'
-                        MinimumTlsVersion = new BicepValue<FrontDoorMinimumTlsVersion>(
-                            new StringLiteralExpression("TLS12")),
-                    },
-                };
-                infra.Add(customDomain);
+                        Parent = profile,
+                        Name = azureFrontDoorCustomDomainArmName,
+                        HostName = azureFrontDoorCustomDomain,
+                        TlsSettings = new FrontDoorCustomDomainHttpsContent
+                        {
+                            CertificateType = FrontDoorCertificateType.ManagedCertificate,
+                            // Tls1_2 enum serializes as 'TLS 1.2' but ARM expects 'TLS12'
+                            MinimumTlsVersion = new BicepValue<FrontDoorMinimumTlsVersion>(
+                                new StringLiteralExpression("TLS12")),
+                        },
+                    };
+                    infra.Add(customDomain);
+                }
 
                 // ── Route ────────────────────────────────────────────────────
                 var route = new FrontDoorRoute("defaultRoute")
@@ -181,10 +185,13 @@ public static class AzureStaticWebsiteExtensions
                         QueryStringCachingBehavior = FrontDoorQueryStringCachingBehavior.IgnoreQueryString,
                     },
                 };
-                route.CustomDomains.Add(new FrontDoorActivatedResourceInfo
+                if (customDomain is not null)
                 {
-                    Id = ((IBicepValue)customDomain.Id).Compile(),
-                });
+                    route.CustomDomains.Add(new FrontDoorActivatedResourceInfo
+                    {
+                        Id = ((IBicepValue)customDomain.Id).Compile(),
+                    });
+                }
                 infra.Add(route);
 
                 infra.Add(new ProvisioningOutput("afdEndpointHostname", typeof(string))
@@ -193,20 +200,21 @@ public static class AzureStaticWebsiteExtensions
                 });
             });
 
-        builder.AddStaticSiteDeployment(
-            name,
-            siteSourcePath,
-            storage,
-            frontDoor,
-            new DnsOptions
+        DnsOptions? dns = null;
+        if (azureFrontDoorCustomDomain is not null && azureFrontDoorCustomDomainArmName is not null && dnsResourceGroup is not null)
+        {
+            dns = new DnsOptions
             {
-                CustomDomain           = afdCustomDomain,
+                CustomDomain           = azureFrontDoorCustomDomain,
                 ResourceGroup          = dnsResourceGroup,
-                AfdProfileName         = afdProfileName,
-                AfdResourceGroup       = afdResourceGroup,
-                AfdEndpointName        = afdEndpointName,
-                AfdCustomDomainArmName = afdCustomDomainArmName,
-            });
+                AzureFrontDoorProfileName         = azureFrontDoorProfileName,
+                AzureFrontDoorResourceGroup       = azureFrontDoorResourceGroup,
+                AzureFrontDoorEndpointName        = azureFrontDoorEndpointName,
+                AzureFrontDoorCustomDomainArmName = azureFrontDoorCustomDomainArmName,
+            };
+        }
+
+        builder.AddStaticSiteDeployment(name, siteSourcePath, storage, frontDoor, dns);
 
         return builder;
     }

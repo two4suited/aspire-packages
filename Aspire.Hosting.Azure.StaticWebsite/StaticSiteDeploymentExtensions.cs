@@ -100,14 +100,14 @@ internal static class StaticSiteDeploymentExtensions
 
                         // Resource ID for the ALIAS A record target
                         var endpointResourceId =
-                            $"/subscriptions/{subscriptionId}/resourceGroups/{dns.AfdResourceGroup}" +
-                            $"/providers/Microsoft.Cdn/profiles/{dns.AfdProfileName}/afdEndpoints/{dns.AfdEndpointName}";
+                            $"/subscriptions/{subscriptionId}/resourceGroups/{dns.AzureFrontDoorResourceGroup}" +
+                            $"/providers/Microsoft.Cdn/profiles/{dns.AzureFrontDoorProfileName}/afdEndpoints/{dns.AzureFrontDoorEndpointName}";
 
                         // Validation token Front Door needs to prove we own the domain
                         var validationToken = (await RunAzOutputAsync(
                             $"afd custom-domain show " +
-                            $"--resource-group {dns.AfdResourceGroup} --profile-name {dns.AfdProfileName} " +
-                            $"--custom-domain-name {dns.AfdCustomDomainArmName} " +
+                            $"--resource-group {dns.AzureFrontDoorResourceGroup} --profile-name {dns.AzureFrontDoorProfileName} " +
+                            $"--custom-domain-name {dns.AzureFrontDoorCustomDomainArmName} " +
                             $"--query \"validationProperties.validationToken\" -o tsv",
                             context.CancellationToken)).Trim();
 
