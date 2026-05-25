@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Pipelines;
 
-namespace Aspire.Hosting.Azure;
+namespace Aspire.Hosting.Azure.StaticWebsite;
 
 internal static class StaticSiteDeploymentExtensions
 {

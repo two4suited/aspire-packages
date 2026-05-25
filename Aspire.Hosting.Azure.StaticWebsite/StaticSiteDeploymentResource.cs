@@ -1,6 +1,6 @@
 using Aspire.Hosting.ApplicationModel;
 
-namespace Aspire.Hosting.Azure;
+namespace Aspire.Hosting.Azure.StaticWebsite;
 
 internal class StaticSiteDeploymentResource : IResource
 {

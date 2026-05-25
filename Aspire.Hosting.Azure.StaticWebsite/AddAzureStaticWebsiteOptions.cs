@@ -1,4 +1,4 @@
-namespace Aspire.Hosting.Azure;
+namespace Aspire.Hosting.Azure.StaticWebsite;
 
 public class AddAzureStaticWebsiteOptions
 {
