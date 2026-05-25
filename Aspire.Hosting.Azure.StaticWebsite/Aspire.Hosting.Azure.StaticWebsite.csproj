@@ -6,8 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Aspire.Hosting.Azure</RootNamespace>
     <AssemblyName>Aspire.Hosting.Azure.StaticWebsite</AssemblyName>
-    <RepositoryUrl>https://github.com/Sheridan-Consulting/aspire-packages</RepositoryUrl>
+    <RepositoryUrl>https://github.com/two4suited/aspire-packages</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Aspire hosting extension that provisions Azure Blob Storage static website hosting behind an existing Azure Front Door profile, with optional custom domain and DNS configuration.</Description>
+    <PackageTags>aspire;azure;static-website;frontdoor;blob-storage</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.FrontDoor" Version="13.3.5-preview.1.26270.6" />
